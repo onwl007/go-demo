@@ -1,56 +1,52 @@
 package main
 
-import (
-	"fmt"
-	"math"
-)
+import "fmt"
 
-type Employee struct {
-	name     string
-	salary   int
-	currency string
+type Phone interface {
+	call()
 }
 
-type Rectangle struct {
-	width, height float64
+type NokiaPhone struct{}
+
+func (nokiaPhone NokiaPhone) call() {
+	fmt.Println("I am Nokia, I can call you!")
 }
 
-type Circle struct {
-	radius float64
+type IPhone struct{}
+
+func (iphone IPhone) call() {
+	fmt.Println("I am iPhone, I can call you!")
 }
 
-func (r Rectangle) area() float64 {
-	return r.width * r.height
-}
-
-func (c Circle) area() float64 {
-	return c.radius * c.radius * math.Pi
-}
-
-func (e Employee) displaySalary() {
-	fmt.Printf("Slary of %s is %s%d\n", e.name, e.currency, e.salary)
-}
+type Student struct{}
 
 func main() {
 	/**
-	方法：
-		就是一个包含了接受者的函数，接受者可以是命名类型或者结构体类型的一个值或是指针
-	语法
-		func (t Type) methodName(parma list)(return list) {}
-	*/
-	emp1 := Employee{
-		name:     "Sam Adolf",
-		salary:   5000,
-		currency: "$",
-	}
-	emp1.displaySalary()
+	接口
+		Go 中，接口是一组方法签名。当类型为接口中的所有方法提供定义时，被称为实现接口
+		接口定义了一组方法，如果某个对象实现了某个接口的所有方法，则此对象就实现了该接口
 
-	r1 := Rectangle{12, 2}
-	r2 := Rectangle{9, 4}
-	c1 := Circle{10}
-	c2 := Circle{25}
-	fmt.Println("Area of r1 is: ", r1.area())
-	fmt.Println("Area of r2 is: ", r2.area())
-	fmt.Println("Area of c1 is: ", c1.area())
-	fmt.Println("Area of c2 is: ", c2.area())
+		1：interface 可以被任意的对象实现
+		2：一个对象可以实现任意多个 interface
+		3：任意的类型都实现了空 interface，也就是包含 0 个 method 的 interface
+	*/
+	var phone Phone
+
+	phone = new(NokiaPhone)
+	phone.call()
+
+	phone = new(IPhone)
+	phone.call()
+
+	// 接口断言
+	var i1 interface{} = new(Student)
+	s := i1.(Student) // 不安全，如果断言失败，则会直接 panic
+
+	fmt.Println(s)
+
+	var i2 interface{} = new(Student)
+	s, ok := i2.(Student) // 安全，断言失败，也不会 panic，只是 ok 的值为 false
+	if ok {
+		fmt.Println(s)
+	}
 }
