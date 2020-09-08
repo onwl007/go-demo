@@ -1,52 +1,134 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"go-demo/employee"
+)
 
-type Phone interface {
-	call()
+type author struct {
+	firstName string
+	lastName  string
+	bio       string
 }
 
-type NokiaPhone struct{}
-
-func (nokiaPhone NokiaPhone) call() {
-	fmt.Println("I am Nokia, I can call you!")
+func (a author) fullName() string {
+	return fmt.Sprintf("%s %s", a.firstName, a.lastName)
 }
 
-type IPhone struct{}
-
-func (iphone IPhone) call() {
-	fmt.Println("I am iPhone, I can call you!")
+type post struct {
+	title   string
+	content string
+	author
 }
 
-type Student struct{}
+func (p post) details() {
+	fmt.Println("Title: ", p.title)
+	fmt.Println("Content: ", p.content)
+	fmt.Println("Author: ", p.author.fullName())
+	fmt.Println("Bio: ", p.author.bio)
+}
+
+type website struct {
+	posts []post
+}
+
+func (w website) contents() {
+	fmt.Println("Contents of Website")
+	for _, v := range w.posts {
+		v.details()
+		fmt.Println()
+	}
+}
+
+type Income interface {
+	calculate() int
+	source() string
+}
+
+type FixedBilling struct {
+	projectName  string
+	biddedAmount int
+}
+
+type TimeAndMaterial struct {
+	projectName string
+	noOfHours   int
+	hourlyRate  int
+}
+
+func (fb FixedBilling) calculate() int {
+	return fb.biddedAmount
+}
+
+func (fb FixedBilling) source() string {
+	return fb.projectName
+}
+
+func (tm TimeAndMaterial) calculate() int {
+	return tm.noOfHours * tm.hourlyRate
+}
+
+func (tm TimeAndMaterial) source() string {
+	return tm.projectName
+}
+
+type Advertisement struct {
+	adName     string
+	CPC        int
+	noOfClicks int
+}
+
+func (a Advertisement) calculate() int {
+	return a.CPC * a.noOfClicks
+}
+
+func (a Advertisement) source() string {
+	return a.adName
+}
+
+func calculateNetIncome(ic []Income) {
+	var netincome int = 0
+	for _, income := range ic {
+		fmt.Printf("Income From %s = %d\n", income.source(), income.calculate())
+		netincome += income.calculate()
+	}
+	fmt.Printf("Net income of organisation = $%d", netincome)
+}
 
 func main() {
-	/**
-	接口
-		Go 中，接口是一组方法签名。当类型为接口中的所有方法提供定义时，被称为实现接口
-		接口定义了一组方法，如果某个对象实现了某个接口的所有方法，则此对象就实现了该接口
+	e := employee.New("Sam", "Adolf", 30, 20)
+	e.LeavesRemaining()
 
-		1：interface 可以被任意的对象实现
-		2：一个对象可以实现任意多个 interface
-		3：任意的类型都实现了空 interface，也就是包含 0 个 method 的 interface
-	*/
-	var phone Phone
-
-	phone = new(NokiaPhone)
-	phone.call()
-
-	phone = new(IPhone)
-	phone.call()
-
-	// 接口断言
-	var i1 interface{} = new(Student)
-	s := i1.(Student) // 不安全，如果断言失败，则会直接 panic
-
-	fmt.Println(s)
-
-	var i2 interface{} = new(Student)
-	s, ok := i2.(Student) // 安全，断言失败，也不会 panic，只是 ok 的值为 false
-	if ok {
-		fmt.Println(s)
+	author1 := author{
+		"Naveen",
+		"Ramanathan",
+		"Golang Enthusiast",
 	}
+	post1 := post{
+		"Inheritance in Go",
+		"Go supports composition instead of inheritance",
+		author1,
+	}
+	post2 := post{
+		"Struct instead of Classes in Go",
+		"Go does not support classes but methods can be added to structs",
+		author1,
+	}
+	post3 := post{
+		"Concurrency",
+		"Go is a concurrent language and not a parallel one",
+		author1,
+	}
+	w := website{
+		posts: []post{post1, post2, post3},
+	}
+	w.contents()
+
+	project1 := FixedBilling{projectName: "Project 1", biddedAmount: 5000}
+	project2 := FixedBilling{projectName: "Project 2", biddedAmount: 10000}
+	project3 := TimeAndMaterial{projectName: "Project 3", noOfHours: 160, hourlyRate: 25}
+	bannerAd := Advertisement{adName: "Banner Ad", CPC: 2, noOfClicks: 500}
+	popupAd := Advertisement{adName: "Popup Ad", CPC: 5, noOfClicks: 750}
+	incomeStreams := []Income{project1, project2, project3, bannerAd, popupAd}
+	calculateNetIncome(incomeStreams)
 }
