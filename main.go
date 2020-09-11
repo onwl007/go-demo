@@ -1,57 +1,20 @@
 package main
 
-import "fmt"
-
-type areaError struct {
-	err    string
-	length float64
-	width  float64
-}
-
-func (e *areaError) Error() string {
-	return e.err
-}
-
-func (e *areaError) lengthNegative() bool {
-	return e.length < 0
-}
-
-func (e *areaError) widthNegative() bool {
-	return e.width < 0
-}
-
-func rectArea(length, width float64) (float64, error) {
-	err := ""
-	if length < 0 {
-		err += "length is less than zero"
-	}
-	if width < 0 {
-		if err == "" {
-			err = "width is less than zero"
-		} else {
-			err += ", width is less than zero"
-		}
-	}
-	if err != "" {
-		return 0, &areaError{err, length, width}
-	}
-	return length * width, nil
-}
+import (
+	"fmt"
+	"os"
+)
 
 func main() {
-	length, width := -5.0, -9.0
-	area, err := rectArea(length, width)
+	fileInfo, err := os.Stat("./aa.txt")
 	if err != nil {
-		if err, ok := err.(*areaError); ok {
-			if err.lengthNegative() {
-				fmt.Printf("error: kength %0.2f is less than zero\n", err.length)
-			}
-			if err.widthNegative() {
-				fmt.Printf("error: width %0.2f is less than zero\n", err.width)
-			}
-		}
-		fmt.Println(err)
+		fmt.Println("err: ", err)
 		return
 	}
-	fmt.Println("area of rect", area)
+	fmt.Printf("%T\n", fileInfo)
+	fmt.Println(fileInfo.Name())
+	fmt.Println(fileInfo.Size())
+	fmt.Println(fileInfo.IsDir())
+	fmt.Println(fileInfo.ModTime())
+	fmt.Println(fileInfo.Mode())
 }
