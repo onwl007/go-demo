@@ -57,14 +57,9 @@ func main() {
 
 	ch3 := make(chan int)
 	go sendData(ch3)
-	for {
-		time.Sleep(1 * time.Second)
-		v, ok := <-ch3
-		if !ok {
-			fmt.Println("已经读取了所有的数据", ok)
-			break
-		}
-		fmt.Println("取出数据：", v, ok)
+	// for 循环的 for range 形式可用于从通道接收值，直到它关闭为止
+	for v := range ch3 {
+		fmt.Println("读取数据：", v)
 	}
 	fmt.Println("main...over...")
 }
@@ -95,6 +90,7 @@ func calcCubes(number int, cubeop chan int) {
 
 func sendData(ch1 chan int) {
 	for i := 0; i < 10; i++ {
+		time.Sleep(1 * time.Second)
 		ch1 <- i
 	}
 	close(ch1)
