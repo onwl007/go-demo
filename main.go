@@ -5,6 +5,20 @@ import (
 	"reflect"
 )
 
+type Person struct {
+	Name string
+	Age  int
+	Sex  string
+}
+
+func (p Person) Say(msg string) {
+	fmt.Println("hello, ", msg)
+}
+
+func (p Person) PrintInfo() {
+	fmt.Printf("姓名：%s，年龄：%d，性别：%s\n", p.Name, p.Age, p.Sex)
+}
+
 func main() {
 	/**
 	反射
@@ -33,27 +47,35 @@ func main() {
 		8. Value 值的可修改性
 	*/
 
-	// 反射操作：通过反射，可以获取一个接口类型变量的类型和数值
-	var x float64 = 3.4
-	fmt.Println("type: ", reflect.TypeOf(x))
-	fmt.Println("value: ", reflect.ValueOf(x))
+	p1 := Person{"王二狗", 30, "男"}
+	DoFiledAndMethod(p1)
 
-	fmt.Println("---------------")
+}
 
-	// 根据反射的值，来获取对应的类型和数值
-	v := reflect.ValueOf(x)
-	fmt.Println("kind is float64: ", v.Kind() == reflect.Float64)
-	fmt.Println("type: ", v.Type())
-	fmt.Println("value: ", v.Float())
+// 通过接口来获取任意参数
+func DoFiledAndMethod(input interface{}) {
+	getType := reflect.TypeOf(input)
+	fmt.Println("get Type is: ", getType.Name())
+	fmt.Println("get Kind is: ", getType.Kind())
 
-	var num float64 = 1.2345
-	pointer := reflect.ValueOf(&num)
-	value := reflect.ValueOf(num)
-	// 可以理解为“强制转换”，但是需要注意的时候，转换的时候，如果转换的类型不完全符合，则直接 panic
-	// Golang 对类型要求非常严格，类型一定要完全符合
-	// 如下两个，一个是 *float64，一个是 float64，如果弄混，则会 panic
-	convertPointer := pointer.Interface().(*float64)
-	convertValue := value.Interface().(float64)
-	fmt.Println(convertPointer)
-	fmt.Println(convertValue)
+	getValue := reflect.ValueOf(input)
+	fmt.Println("get all Fields is: ", getValue)
+
+	// 获取方法字段
+	// 1. 先获取 interface 的 reflect.Type，然后通过 NumField 进行遍历
+	// 2. 再通过 reflect.Type 的 Field 获取其 Field
+	// 3. 最后通过 Field 的 Interface() 得到对应的 value
+	for i := 0; i < getType.NumField(); i++ {
+		field := getType.Field(i)
+		value := getValue.Field(i).Interface()
+		fmt.Printf("字段名称：%s，字段类型：%s，字段数值：%v \n", field.Name, field.Type, value)
+	}
+
+	// 通过反射，操作方法
+	// 1. 先获取 interface 的 reflect.Type，然后通过 NumMethod 进行遍历
+	// 2. 再通过 reflect.Type 的 Method 获取其 Method
+	for i := 0; i < getType.NumMethod(); i++ {
+		method := getType.Method(i)
+		fmt.Printf("方法名称：%s，方法类型：%v \n", method.Name, method.Type)
+	}
 }
