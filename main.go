@@ -2,96 +2,58 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"reflect"
 )
 
 func main() {
 	/**
-	1. 用于 goroutine，传递消息的
-	2. 通道，每个都有相关联的数据类型
-	3. 使用通道传递数据 <-
-		chan <- data 发送数据到通道。向通道中写数据
-		data <- chan 从通道中获取数据。从通道中读数据
-	4. 阻塞
-		发送和读取数据都是阻塞的
-	5. 本身 channel 就是同步的，意味着同一时间，只能有一条 goroutine 来操作
-	通道是 goroutine 之间的连接，所以通道的发送和接收必须处在不同的 goroutine 中
+	反射
+		指计算机程序在运行时可以访问、检测和修改它本身状态或行为的一种能力。
+		反射就是程序在运行的时候能够观察并且修改自己的行为
+
+	静态类型
+		每个变量的类型在编译时都是确定的
+	动态类型
+		运行时给这个变量赋值时，这个值的类型（如果值为 nil 的时候没有动态类型）。
+		一个变量的动态类型在运行时可能改变，这主要依赖于它的赋值（前提是这个变量是接口类型）
+
+	其实反射的操作步骤非常的简单，就是通过实体对象获取反射对象 (Value, Type)，
+	然后操作相应的方法即可
+
+	反射 API 的分类总结
+		1. 从实例到 Value
+			通过实例获取 Value 对象
+		2. 从实例到 Type
+			通过实例获取反射对象的 Type
+		3. 从 Type 到 Value
+		4. 从 Value 到 Type
+		5. 从 Value 到实例
+		6. 从 Value 的指针到值
+		7. Type 指针和值的相互转换
+		8. Value 值的可修改性
 	*/
-	var a chan int
-	if a == nil {
-		fmt.Println("channel 是 nil，不能使用，需要先创建通道。。")
-		a = make(chan int)
-		fmt.Printf("数据类型是：%T", a)
-	}
 
-	ch1 := make(chan int)
-	fmt.Printf("%T,%p\n", ch1, ch1)
+	// 反射操作：通过反射，可以获取一个接口类型变量的类型和数值
+	var x float64 = 3.4
+	fmt.Println("type: ", reflect.TypeOf(x))
+	fmt.Println("value: ", reflect.ValueOf(x))
 
-	test1(ch1)
+	fmt.Println("---------------")
 
-	var ch2 chan bool
-	fmt.Println(ch2)
-	fmt.Printf("%T\n", ch2)
-	ch2 = make(chan bool)
-	fmt.Println(ch2)
+	// 根据反射的值，来获取对应的类型和数值
+	v := reflect.ValueOf(x)
+	fmt.Println("kind is float64: ", v.Kind() == reflect.Float64)
+	fmt.Println("type: ", v.Type())
+	fmt.Println("value: ", v.Float())
 
-	go func() {
-		for i := 0; i < 10; i++ {
-			fmt.Println("子 goroutine 中，i: ", i)
-		}
-		ch2 <- true
-		fmt.Println("结束。。。")
-	}()
-
-	data := <-ch2
-	fmt.Println("data --> ", data)
-	fmt.Println("main..over..")
-
-	number := 589
-	sqrch := make(chan int)
-	cubech := make(chan int)
-	go calcSquares(number, sqrch)
-	go calcCubes(number, cubech)
-	squares, cubes := <-sqrch, <-cubech
-	fmt.Println("Final output", squares+cubes)
-
-	ch3 := make(chan int)
-	go sendData(ch3)
-	// for 循环的 for range 形式可用于从通道接收值，直到它关闭为止
-	for v := range ch3 {
-		fmt.Println("读取数据：", v)
-	}
-	fmt.Println("main...over...")
-}
-
-func test1(ch chan int) {
-	fmt.Printf("%T,%p\n", ch, ch)
-}
-
-func calcSquares(number int, squareop chan int) {
-	sum := 0
-	for number != 0 {
-		digit := number % 10
-		sum += digit * digit
-		number /= 10
-	}
-	squareop <- sum
-}
-
-func calcCubes(number int, cubeop chan int) {
-	sum := 0
-	for number != 0 {
-		digit := number % 10
-		sum += digit * digit * digit
-		number /= 10
-	}
-	cubeop <- sum
-}
-
-func sendData(ch1 chan int) {
-	for i := 0; i < 10; i++ {
-		time.Sleep(1 * time.Second)
-		ch1 <- i
-	}
-	close(ch1)
+	var num float64 = 1.2345
+	pointer := reflect.ValueOf(&num)
+	value := reflect.ValueOf(num)
+	// 可以理解为“强制转换”，但是需要注意的时候，转换的时候，如果转换的类型不完全符合，则直接 panic
+	// Golang 对类型要求非常严格，类型一定要完全符合
+	// 如下两个，一个是 *float64，一个是 float64，如果弄混，则会 panic
+	convertPointer := pointer.Interface().(*float64)
+	convertValue := value.Interface().(float64)
+	fmt.Println(convertPointer)
+	fmt.Println(convertValue)
 }
