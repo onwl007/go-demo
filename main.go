@@ -5,24 +5,6 @@ import (
 	"reflect"
 )
 
-type Person struct {
-	Name string
-	Age  int
-	Sex  string
-}
-
-func (p Person) Say(msg string) {
-	fmt.Println("hello, ", msg)
-}
-
-func (p Person) PrintInfo() {
-	fmt.Printf("姓名：%s，年龄：%d，性别：%s\n", p.Name, p.Age, p.Sex)
-}
-
-func (p Person) Test(i, j int, s string) {
-	fmt.Println(i, j, s)
-}
-
 func main() {
 	/**
 	反射
@@ -55,27 +37,25 @@ func main() {
 	但如果要通过反射，首先要将方法注册，也就是 MethodByName，然后通过反射调用 Call
 	*/
 
-	p2 := Person{"Ruby", 30, "男"}
-	// 1. 要通过反射来调用起对应的方法，必须要先通过 reflect.ValueOf(interface)来获取到 reflect.Value,得到反射类型对象后才能做下一步处理
-	getValue := reflect.ValueOf(p2)
+	// 函数的反射
+	f1 := fun1
+	value := reflect.ValueOf(f1)
+	fmt.Printf("Kind: %s, Type: %s\n", value.Kind(), value.Type())
 
-	// 2. 一定要指定参数为正确的方法名，先看看没有参数的调用方法
-	methodValue1 := getValue.MethodByName("PrintInfo")
-	fmt.Printf("Kind: %s, Type: %s\n", methodValue1.Kind(), methodValue1.Type())
-	methodValue1.Call(nil) // 没有参数，直接写 nil
+	value2 := reflect.ValueOf(fun2)
+	fmt.Printf("Kind: %s, Type: %s\n", value2.Kind(), value2.Type())
 
-	args1 := make([]reflect.Value, 0) // 或者创建一个空的切片也可以
-	methodValue1.Call(args1)
+	// 通过反射调用函数
+	value.Call(nil)
 
-	// 有参数的方法调用
-	methodValue2 := getValue.MethodByName("Say")
-	fmt.Printf("Kind: %s, Type: %s\n", methodValue2.Kind(), methodValue2.Type())
-	args2 := []reflect.Value{reflect.ValueOf("反射机制")}
-	methodValue2.Call(args2)
+	value2.Call([]reflect.Value{reflect.ValueOf(100), reflect.ValueOf("hello")})
 
-	methodValue3 := getValue.MethodByName("Test")
-	fmt.Printf("Kind: %s, Type: %s\n", methodValue3.Kind(), methodValue3.Type())
-	args3 := []reflect.Value{reflect.ValueOf(100), reflect.ValueOf(200), reflect.ValueOf("Hello")}
-	methodValue3.Call(args3)
+}
 
+func fun1() {
+	fmt.Println("我是函数 fun1()，无参的。。。")
+}
+
+func fun2(i int, s string) {
+	fmt.Println("我是函数 fun2()，有参数的。。。", i, s)
 }
