@@ -30,9 +30,9 @@ func (w *Wallet) Balance() Bitcoin {
 	return w.balance
 }
 
-func (w *Wallet) Widthdraw(amount Bitcoin) error {
+func (w *Wallet) Withdraw(amount Bitcoin) error {
 	if amount > w.balance {
-		return errors.New("on no")
+		return errors.New("cannot withdraw, insufficient funds")
 	}
 
 	w.balance -= amount
