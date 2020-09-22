@@ -32,6 +32,10 @@ func (w *Wallet) Balance() Bitcoin {
 
 var InsufficientFundsError = errors.New("cannot withdraw, insufficient funds")
 
+/**
+指针
+	当你传值给函数或方法时，Go 会复制这些值。如果需要更改状态，就需要用到指针指向你想要更改的值
+*/
 func (w *Wallet) Withdraw(amount Bitcoin) error {
 	if amount > w.balance {
 		return InsufficientFundsError
