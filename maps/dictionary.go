@@ -9,6 +9,12 @@ var (
 	ErrWordExists = errors.New("cannot add word because it already exists")
 )
 
+type DictionaryErr string
+
+func (e DictionaryErr) Error() string {
+	return string(e)
+}
+
 func (d Dictionary) Search(word string) (string, error) {
 	definition, ok := d[word]
 	if !ok {
